@@ -24,8 +24,8 @@ document.getElementById('signupForm').addEventListener('submit', (e) => {
     auth.createUserWithEmailAndPassword(email, password)
         .then((userCredential) => {
             const user = userCredential.user;
-            // Save user data to Firestore
-            return db.collection('users').doc(user.uid).set({
+            // Save user data to Firestore using email as the document ID
+            return db.collection('users').doc(email).set({
                 email: user.email,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });

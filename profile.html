@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Page</title>
+    <title>Profile Page</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <style>
         body {
@@ -25,32 +25,6 @@
             font-size: 24px;
             color: #262626;
         }
-        .navbar .search-bar {
-            display: flex;
-            margin: 0 20px;
-            flex: 1;
-        }
-        .navbar .search-bar input {
-            flex: 1;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #dddfe2;
-            border-radius: 4px 0 0 4px;
-            outline: none;
-        }
-        .navbar .search-bar button {
-            padding: 10px 20px;
-            font-size: 16px;
-            border: 1px solid #dddfe2;
-            border-left: none;
-            border-radius: 0 4px 4px 0;
-            background-color: #0095f6;
-            color: white;
-            cursor: pointer;
-        }
-        .navbar .search-bar button:hover {
-            background-color: #007bb5;
-        }
         .navbar .nav-icons {
             display: flex;
             align-items: center;
@@ -70,75 +44,102 @@
             background-color: white;
             border: 1px solid #dbdbdb;
             border-radius: 3px;
+        }
+        .profile-header {
             display: flex;
+            align-items: center;
+            margin-bottom: 20px;
         }
-        .main-content {
-            flex: 3;
+        .profile-picture {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 30px;
         }
-        .sidebar {
-            flex: 1;
-            margin-left: 20px;
+        .profile-info {
+            flex-grow: 1;
         }
-        .search-result {
-            position: absolute;
-            background-color: white;
-            border: 1px solid #dddfe2;
-            border-radius: 4px;
-            width: calc(100% - 40px);
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 1000;
-        }
-        .search-result p {
-            margin: 0;
-            padding: 10px;
-            cursor: pointer;
-        }
-        .search-result p:hover {
-            background-color: #f0f2f5;
-        }
-        .friends-list {
-            background-color: white;
-            padding: 20px;
-            border-radius: 3px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        .friends-list h3 {
+        .profile-info h2 {
             margin: 0 0 10px 0;
-            color: #262626;
+            font-size: 28px;
         }
-        .friends-list p {
-            margin: 0;
-            color: #262626;
+        .profile-stats {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .profile-stat {
+            margin-right: 40px;
+        }
+        .profile-stat span {
+            font-weight: bold;
+        }
+        .profile-bio {
+            margin-bottom: 20px;
+        }
+        .profile-actions button {
+            background-color: #0095f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
             cursor: pointer;
+            font-weight: bold;
         }
-        .friends-list p:hover {
-            text-decoration: underline;
+        .profile-actions button:hover {
+            background-color: #0077c5;
+        }
+        .profile-posts {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+        }
+        .profile-post {
+            width: 100%;
+            padding-bottom: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        .profile-post img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
     </style>
 </head>
 <body>
     <div class="navbar">
-        <h1>MyApp</h1>
-        <div class="search-bar">
-            <input type="text" id="searchEmail" placeholder="Search by email">
-            <button id="searchButton"><i class="fas fa-search"></i></button>
-            <div id="searchResult" class="search-result"></div>
-        </div>
+        <h1>Mikxx</h1>
         <div class="nav-icons">
-            <a href="profile.html" id="profileLink"><i class="fas fa-user"></i></a>
+            <a href="home.html"><i class="fas fa-home"></i></a>
             <button id="logoutButton"><i class="fas fa-sign-out-alt"></i></button>
         </div>
     </div>
     <div class="container">
-        <div class="main-content">
-            <p>Welcome to MyApp!</p>
-        </div>
-        <div class="sidebar">
-            <div class="friends-list" id="friendsList">
-                <h3>Friends</h3>
-                <!-- Friends will be dynamically added here -->
+        <div class="profile-header">
+            <img id="profilePicture" class="profile-picture" src="https://via.placeholder.com/150" alt="Profile Picture">
+            <div class="profile-info">
+                <h2 id="profileEmail">user@example.com</h2>
+                <div class="profile-stats">
+                    <div class="profile-stat">
+                        <span id="postsCount">0</span> posts
+                    </div>
+                    <div class="profile-stat">
+                        <span id="friendsCount">0</span> friends
+                    </div>
+                </div>
+                <div class="profile-bio" id="profileBio"></div>
+                <div class="profile-actions">
+                    <button id="friendActionButton" style="display: none;">Add Friend</button>
+                    <button id="editProfileButton" style="display: none;">Edit Profile</button>
+                </div>
             </div>
+        </div>
+        <div class="profile-posts" id="profilePosts">
+            <!-- Posts will be dynamically added here -->
         </div>
     </div>
 
@@ -147,114 +148,35 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
     <script src="firebase.js"></script>
     <script>
-        document.getElementById('logoutButton').addEventListener('click', () => {
-            firebase.auth().signOut().then(() => {
-                window.location.href = 'index.html'; // Redirect to login page
-            }).catch((error) => {
-                alert('Error: ' + error.message);
-            });
-        });
-
-        document.getElementById('searchButton').addEventListener('click', () => {
-            const email = document.getElementById('searchEmail').value;
-            if (email) {
-                searchUserByEmail(email);
-            } else {
-                alert('Please enter an email to search.');
-            }
-        });
-
-        document.getElementById('searchEmail').addEventListener('input', () => {
-            const email = document.getElementById('searchEmail').value;
-            if (email) {
-                searchUserByEmail(email);
-            } else {
-                document.getElementById('searchResult').innerHTML = '';
-            }
-        });
-
-        function searchUserByEmail(email) {
-            db.collection('users').where('email', '==', email).get()
-                .then((querySnapshot) => {
-                    const searchResult = document.getElementById('searchResult');
-                    searchResult.innerHTML = '';
-                    if (!querySnapshot.empty) {
-                        querySnapshot.forEach((doc) => {
-                            const userData = doc.data();
-                            const resultItem = document.createElement('p');
-                            resultItem.textContent = userData.email;
-                            resultItem.addEventListener('click', () => {
-                                window.location.href = `profile.html?email=${userData.email}`;
-                            });
-                            searchResult.appendChild(resultItem);
-                        });
-                    } else {
-                        searchResult.innerHTML = `<p>No user found with email: ${email}</p>`;
-                    }
-                })
-                .catch((error) => {
-                    alert('Error: ' + error.message);
-                });
-        }
+        let currentUser;
+        let profileUser;
 
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-                document.getElementById('profileLink').href = `profile.html?email=${user.email}`;
-                loadFriends();
-                loadFriendRequests();
+                currentUser = user;
+                const urlParams = new URLSearchParams(window.location.search);
+                const email = urlParams.get('email');
+                if (email && email !== user.email) {
+                    loadUserProfile(email);
+                } else {
+                    loadUserProfile(user.email);
+                }
             } else {
-                window.location.href = 'index.html'; // Redirect to login page if not signed in
+                window.location.href = 'index.html';
             }
         });
 
-        function loadFriends() {
-            db.collection('users').doc(firebase.auth().currentUser.uid).get()
+        function loadUserProfile(email) {
+            db.collection('users').doc(email).get()
                 .then((doc) => {
-                    const userData = doc.data();
-                    if (userData && userData.friends) {
-                        const friendsList = document.getElementById('friendsList');
-                        friendsList.innerHTML = '';
-                        userData.friends.forEach((friendId) => {
-                            db.collection('users').doc(friendId).get()
-                                .then((friendDoc) => {
-                                    const friendData = friendDoc.data();
-                                    const friendItem = document.createElement('p');
-                                    friendItem.textContent = friendData.email;
-                                    friendItem.addEventListener('click', () => {
-                                        window.location.href = `profile.html?email=${friendData.email}`;
-                                    });
-                                    friendsList.appendChild(friendItem);
-                                })
-                                .catch((error) => {
-                                    alert('Error: ' + error.message);
-                                });
-                        });
-                    }
-                })
-                .catch((error) => {
-                    alert('Error: ' + error.message);
-                });
-        }
-
-        function loadFriendRequests() {
-            db.collection('friendRequests').where('receiverId', '==', firebase.auth().currentUser.uid).where('status', '==', 'pending').get()
-                .then((querySnapshot) => {
-                    const friendRequests = document.getElementById('friendRequests');
-                    friendRequests.innerHTML = '';
-                    if (!querySnapshot.empty) {
-                        querySnapshot.forEach((doc) => {
-                            const requestData = doc.data();
-                            const requestItem = document.createElement('div');
-                            requestItem.classList.add('friend-request');
-                            requestItem.innerHTML = `
-                                <p>${requestData.senderEmail}</p>
-                                <button class="accept-button" data-request-id="${doc.id}">Accept</button>
-                                <button class="reject-button" data-request-id="${doc.id}">Reject</button>
-                            `;
-                            friendRequests.appendChild(requestItem);
-                        });
+                    if (doc.exists) {
+                        profileUser = doc.data();
+                        profileUser.id = doc.id;
+                        updateProfileUI();
+                        loadUserPosts();
+                        updateFriendActionButton();
                     } else {
-                        friendRequests.innerHTML = '<p>No pending friend requests.</p>';
+                        alert('No user found with the specified email.');
                     }
                 })
                 .catch((error) => {
@@ -262,36 +184,160 @@
                 });
         }
 
-        document.addEventListener('click', (event) => {
-            if (event.target.classList.contains('accept-button')) {
-                const requestId = event.target.dataset.requestId;
-                acceptFriendRequest(requestId);
-            } else if (event.target.classList.contains('reject-button')) {
-                const requestId = event.target.dataset.requestId;
-                rejectFriendRequest(requestId);
+        function updateProfileUI() {
+            document.getElementById('profileEmail').textContent = profileUser.email;
+            document.getElementById('profileBio').textContent = profileUser.bio || 'No bio available';
+            document.getElementById('friendsCount').textContent = profileUser.friends ? profileUser.friends.length : 0;
+            if (profileUser.profilePicture) {
+                document.getElementById('profilePicture').src = profileUser.profilePicture;
             }
-        });
+            if (currentUser.email === profileUser.id) {
+                document.getElementById('editProfileButton').style.display = 'inline-block';
+            } else {
+                document.getElementById('friendActionButton').style.display = 'inline-block';
+            }
+        }
 
-        function acceptFriendRequest(requestId) {
-            db.collection('friendRequests').doc(requestId).update({
-                status: 'accepted'
+        function loadUserPosts() {
+            db.collection('posts').where('userId', '==', profileUser.id).orderBy('createdAt', 'desc').get()
+                .then((querySnapshot) => {
+                    const profilePosts = document.getElementById('profilePosts');
+                    profilePosts.innerHTML = '';
+                    document.getElementById('postsCount').textContent = querySnapshot.size;
+                    querySnapshot.forEach((doc) => {
+                        const post = doc.data();
+                        const postElement = document.createElement('div');
+                        postElement.className = 'profile-post';
+                        postElement.innerHTML = `<img src="${post.imageUrl || 'https://via.placeholder.com/300'}" alt="Post">`;
+                        profilePosts.appendChild(postElement);
+                    });
+                })
+                .catch((error) => {
+                    console.error('Error loading posts:', error);
+                });
+        }
+
+        function updateFriendActionButton() {
+            const friendActionButton = document.getElementById('friendActionButton');
+            if (currentUser.email === profileUser.id) {
+                friendActionButton.style.display = 'none';
+                return;
+            }
+            
+            db.collection('friendRequests')
+                .where('sender', 'in', [currentUser.email, profileUser.id])
+                .where('receiver', 'in', [currentUser.email, profileUser.id])
+                .get()
+                .then((querySnapshot) => {
+                    if (querySnapshot.empty) {
+                        friendActionButton.textContent = 'Add Friend';
+                        friendActionButton.onclick = sendFriendRequest;
+                    } else {
+                        const request = querySnapshot.docs[0].data();
+                        if (request.status === 'pending') {
+                            if (request.sender === currentUser.email) {
+                                friendActionButton.textContent = 'Cancel Request';
+                                friendActionButton.onclick = cancelFriendRequest;
+                            } else {
+                                friendActionButton.textContent = 'Accept Request';
+                                friendActionButton.onclick = acceptFriendRequest;
+                            }
+                        } else if (request.status === 'accepted') {
+                            friendActionButton.textContent = 'Unfriend';
+                            friendActionButton.onclick = unfriend;
+                        }
+                    }
+                });
+        }
+
+        function sendFriendRequest() {
+            db.collection('friendRequests').add({
+                sender: currentUser.email,
+                receiver: profileUser.id,
+                status: 'pending',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
-                loadFriendRequests();
-                loadFriends();
+                updateFriendActionButton();
             }).catch((error) => {
                 alert('Error: ' + error.message);
             });
         }
 
-        function rejectFriendRequest(requestId) {
-            db.collection('friendRequests').doc(requestId).delete()
-                .then(() => {
-                    loadFriendRequests();
-                })
-                .catch((error) => {
+        function cancelFriendRequest() {
+            db.collection('friendRequests')
+                .where('sender', '==', currentUser.email)
+                .where('receiver', '==', profileUser.id)
+                .where('status', '==', 'pending')
+                .get()
+                .then((querySnapshot) => {
+                    querySnapshot.forEach((doc) => {
+                        doc.ref.delete().then(() => {
+                            updateFriendActionButton();
+                        });
+                    });
+                }).catch((error) => {
                     alert('Error: ' + error.message);
                 });
         }
+
+        function acceptFriendRequest() {
+            db.collection('friendRequests')
+                .where('sender', '==', profileUser.id)
+                .where('receiver', '==', currentUser.email)
+                .where('status', '==', 'pending')
+                .get()
+                .then((querySnapshot) => {
+                    querySnapshot.forEach((doc) => {
+                        doc.ref.update({ status: 'accepted' }).then(() => {
+                            db.collection('users').doc(currentUser.email).update({
+                                friends: firebase.firestore.FieldValue.arrayUnion(profileUser.id)
+                            });
+                            db.collection('users').doc(profileUser.id).update({
+                                friends: firebase.firestore.FieldValue.arrayUnion(currentUser.email)
+                            });
+                            updateFriendActionButton();
+                            loadUserProfile(profileUser.id);
+                        });
+                    });
+                }).catch((error) => {
+                    alert('Error: ' + error.message);
+                });
+        }
+
+        function unfriend() {
+            db.collection('users').doc(currentUser.email).update({
+                friends: firebase.firestore.FieldValue.arrayRemove(profileUser.id)
+            });
+            db.collection('users').doc(profileUser.id).update({
+                friends: firebase.firestore.FieldValue.arrayRemove(currentUser.email)
+            }).then(() => {
+                updateFriendActionButton();
+                loadUserProfile(profileUser.id);
+            }).catch((error) => {
+                alert('Error: ' + error.message);
+            });
+        }
+
+        document.getElementById('editProfileButton').addEventListener('click', () => {
+            const newBio = prompt('Enter your new bio:', profileUser.bio || '');
+            if (newBio !== null) {
+                db.collection('users').doc(currentUser.email).update({
+                    bio: newBio
+                }).then(() => {
+                    loadUserProfile(currentUser.email);
+                }).catch((error) => {
+                    alert('Error: ' + error.message);
+                });
+            }
+        });
+
+        document.getElementById('logoutButton').addEventListener('click', () => {
+            firebase.auth().signOut().then(() => {
+                window.location.href = 'index.html';
+            }).catch((error) => {
+                alert('Error: ' + error.message);
+            });
+        });
     </script>
 </body>
 </html>
