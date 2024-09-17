@@ -201,7 +201,7 @@
         });
 
         function searchUserByEmail(email) {
-            db.collection('users').where('email', '==', email).get()
+            firebase.firestore().collection('users').where('email', '==', email).get()
                 .then((querySnapshot) => {
                     const searchResult = document.getElementById('searchResult');
                     searchResult.innerHTML = '';
@@ -211,7 +211,7 @@
                             const resultItem = document.createElement('p');
                             resultItem.textContent = userData.email;
                             resultItem.addEventListener('click', () => {
-                                window.location.href = `profile.html?email=${userData.email}`;
+                                openUserProfile(userData.email);
                             });
                             searchResult.appendChild(resultItem);
                         });
@@ -220,14 +220,19 @@
                     }
                 })
                 .catch((error) => {
+                    console.error("Error searching for user:", error);
                     alert('Error: ' + error.message);
                 });
+        }
+
+        function openUserProfile(email) {
+            window.location.href = `profile.html?email=${email}`;
         }
 
         function loadFriends() {
             const user = firebase.auth().currentUser;
             if (user) {
-                db.collection('users').doc(user.email).get()
+                firebase.firestore().collection('users').doc(user.email).get()
                     .then((doc) => {
                         if (doc.exists) {
                             const userData = doc.data();
@@ -235,7 +240,7 @@
                             friendsList.innerHTML = '<h3>Friends</h3>';
                             if (userData.friends && userData.friends.length > 0) {
                                 userData.friends.forEach((friendEmail) => {
-                                    db.collection('users').doc(friendEmail).get()
+                                    firebase.firestore().collection('users').doc(friendEmail).get()
                                         .then((friendDoc) => {
                                             if (friendDoc.exists) {
                                                 const friendData = friendDoc.data();
@@ -263,7 +268,7 @@
         function loadFriendRequests() {
             const user = firebase.auth().currentUser;
             if (user) {
-                db.collection('friendRequests')
+                firebase.firestore().collection('friendRequests')
                     .where('receiver', '==', user.email)
                     .where('status', '==', 'pending')
                     .get()
@@ -289,15 +294,15 @@
 
         function acceptFriendRequest(requestId) {
             const user = firebase.auth().currentUser;
-            db.collection('friendRequests').doc(requestId).get()
+            firebase.firestore().collection('friendRequests').doc(requestId).get()
                 .then((doc) => {
                     const request = doc.data();
-                    return db.runTransaction((transaction) => {
-                        transaction.update(db.collection('friendRequests').doc(requestId), { status: 'accepted' });
-                        transaction.update(db.collection('users').doc(user.email), {
+                    return firebase.firestore().runTransaction((transaction) => {
+                        transaction.update(firebase.firestore().collection('friendRequests').doc(requestId), { status: 'accepted' });
+                        transaction.update(firebase.firestore().collection('users').doc(user.email), {
                             friends: firebase.firestore.FieldValue.arrayUnion(request.sender)
                         });
-                        transaction.update(db.collection('users').doc(request.sender), {
+                        transaction.update(firebase.firestore().collection('users').doc(request.sender), {
                             friends: firebase.firestore.FieldValue.arrayUnion(user.email)
                         });
                     });
@@ -312,7 +317,7 @@
         }
 
         function rejectFriendRequest(requestId) {
-            db.collection('friendRequests').doc(requestId).delete()
+            firebase.firestore().collection('friendRequests').doc(requestId).delete()
                 .then(() => {
                     loadFriendRequests();
                 })

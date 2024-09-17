@@ -167,7 +167,7 @@
         });
 
         function loadUserProfile(email) {
-            db.collection('users').doc(email).get()
+            firebase.firestore().collection('users').doc(email).get()
                 .then((doc) => {
                     if (doc.exists) {
                         profileUser = doc.data();
@@ -180,7 +180,8 @@
                     }
                 })
                 .catch((error) => {
-                    alert('Error: ' + error.message);
+                    console.error("Error loading user profile:", error);
+                    alert('Error loading user profile: ' + error.message);
                 });
         }
 
@@ -199,7 +200,10 @@
         }
 
         function loadUserPosts() {
-            db.collection('posts').where('userId', '==', profileUser.id).orderBy('createdAt', 'desc').get()
+            firebase.firestore().collection('posts')
+                .where('userId', '==', profileUser.id)
+                .orderBy('createdAt', 'desc')
+                .get()
                 .then((querySnapshot) => {
                     const profilePosts = document.getElementById('profilePosts');
                     profilePosts.innerHTML = '';
@@ -224,7 +228,7 @@
                 return;
             }
             
-            db.collection('friendRequests')
+            firebase.firestore().collection('friendRequests')
                 .where('sender', 'in', [currentUser.email, profileUser.id])
                 .where('receiver', 'in', [currentUser.email, profileUser.id])
                 .get()
@@ -251,7 +255,7 @@
         }
 
         function sendFriendRequest() {
-            db.collection('friendRequests').add({
+            firebase.firestore().collection('friendRequests').add({
                 sender: currentUser.email,
                 receiver: profileUser.id,
                 status: 'pending',
@@ -259,12 +263,13 @@
             }).then(() => {
                 updateFriendActionButton();
             }).catch((error) => {
+                console.error("Error sending friend request:", error);
                 alert('Error: ' + error.message);
             });
         }
 
         function cancelFriendRequest() {
-            db.collection('friendRequests')
+            firebase.firestore().collection('friendRequests')
                 .where('sender', '==', currentUser.email)
                 .where('receiver', '==', profileUser.id)
                 .where('status', '==', 'pending')
@@ -276,12 +281,13 @@
                         });
                     });
                 }).catch((error) => {
+                    console.error("Error canceling friend request:", error);
                     alert('Error: ' + error.message);
                 });
         }
 
         function acceptFriendRequest() {
-            db.collection('friendRequests')
+            firebase.firestore().collection('friendRequests')
                 .where('sender', '==', profileUser.id)
                 .where('receiver', '==', currentUser.email)
                 .where('status', '==', 'pending')
@@ -289,10 +295,10 @@
                 .then((querySnapshot) => {
                     querySnapshot.forEach((doc) => {
                         doc.ref.update({ status: 'accepted' }).then(() => {
-                            db.collection('users').doc(currentUser.email).update({
+                            firebase.firestore().collection('users').doc(currentUser.email).update({
                                 friends: firebase.firestore.FieldValue.arrayUnion(profileUser.id)
                             });
-                            db.collection('users').doc(profileUser.id).update({
+                            firebase.firestore().collection('users').doc(profileUser.id).update({
                                 friends: firebase.firestore.FieldValue.arrayUnion(currentUser.email)
                             });
                             updateFriendActionButton();
@@ -300,20 +306,22 @@
                         });
                     });
                 }).catch((error) => {
+                    console.error("Error accepting friend request:", error);
                     alert('Error: ' + error.message);
                 });
         }
 
         function unfriend() {
-            db.collection('users').doc(currentUser.email).update({
+            firebase.firestore().collection('users').doc(currentUser.email).update({
                 friends: firebase.firestore.FieldValue.arrayRemove(profileUser.id)
             });
-            db.collection('users').doc(profileUser.id).update({
+            firebase.firestore().collection('users').doc(profileUser.id).update({
                 friends: firebase.firestore.FieldValue.arrayRemove(currentUser.email)
             }).then(() => {
                 updateFriendActionButton();
                 loadUserProfile(profileUser.id);
             }).catch((error) => {
+                console.error("Error unfriending:", error);
                 alert('Error: ' + error.message);
             });
         }
@@ -321,11 +329,12 @@
         document.getElementById('editProfileButton').addEventListener('click', () => {
             const newBio = prompt('Enter your new bio:', profileUser.bio || '');
             if (newBio !== null) {
-                db.collection('users').doc(currentUser.email).update({
+                firebase.firestore().collection('users').doc(currentUser.email).update({
                     bio: newBio
                 }).then(() => {
                     loadUserProfile(currentUser.email);
                 }).catch((error) => {
+                    console.error("Error updating bio:", error);
                     alert('Error: ' + error.message);
                 });
             }
@@ -335,6 +344,7 @@
             firebase.auth().signOut().then(() => {
                 window.location.href = 'index.html';
             }).catch((error) => {
+                console.error("Error signing out:", error);
                 alert('Error: ' + error.message);
             });
         });
