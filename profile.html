@@ -64,49 +64,22 @@
             margin: 0 0 10px 0;
             font-size: 28px;
         }
-        .profile-stats {
-            display: flex;
-            margin-bottom: 20px;
-        }
-        .profile-stat {
-            margin-right: 40px;
-        }
-        .profile-stat span {
-            font-weight: bold;
-        }
-        .profile-bio {
-            margin-bottom: 20px;
+        .profile-info p {
+            margin: 5px 0;
+            color: #8e8e8e;
         }
         .profile-actions button {
             background-color: #0095f6;
             color: white;
+            font-weight: bold;
             border: none;
             padding: 8px 16px;
             border-radius: 4px;
             cursor: pointer;
-            font-weight: bold;
+            font-size: 16px;
         }
         .profile-actions button:hover {
-            background-color: #0077c5;
-        }
-        .profile-posts {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 28px;
-        }
-        .profile-post {
-            width: 100%;
-            padding-bottom: 100%;
-            position: relative;
-            overflow: hidden;
-        }
-        .profile-post img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+            background-color: #007bb5;
         }
     </style>
 </head>
@@ -124,6 +97,9 @@
             <div class="profile-info">
                 <h2 id="profileUsername">username</h2>
                 <p id="profileEmail">user@example.com</p>
+                <div class="profile-actions">
+                    <button id="friendButton" class="friend-button">Add Friend</button>
+                </div>
             </div>
         </div>
     </div>
@@ -133,12 +109,21 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
     <script src="firebase.js"></script>
     <script>
-        // Check if user is signed in
+        let currentUser;
+        let profileUser;
+
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-                loadUserProfile(user.email);
+                currentUser = user;
+                const urlParams = new URLSearchParams(window.location.search);
+                const email = urlParams.get('email');
+                if (email) {
+                    loadUserProfile(email);
+                } else {
+                    loadUserProfile(user.email);
+                }
             } else {
-                window.location.href = 'index.html'; // Redirect to login page if not signed in
+                window.location.href = 'index.html';
             }
         });
 
@@ -146,9 +131,9 @@
             db.collection('users').doc(email).get()
                 .then((doc) => {
                     if (doc.exists) {
-                        const userData = doc.data();
-                        document.getElementById('profileUsername').textContent = userData.username;
-                        document.getElementById('profileEmail').textContent = userData.email;
+                        profileUser = doc.data();
+                        profileUser.id = doc.id;
+                        updateProfileUI();
                     } else {
                         alert('No user found with the specified email.');
                     }
@@ -157,6 +142,12 @@
                     console.error("Error loading user profile:", error);
                     alert('Error loading user profile: ' + error.message);
                 });
+        }
+
+        function updateProfileUI() {
+            document.getElementById('profileUsername').textContent = profileUser.username || 'No username set';
+            document.getElementById('profileEmail').textContent = profileUser.email;
+            // Additional UI updates can be added here
         }
 
         document.getElementById('logoutButton').addEventListener('click', () => {

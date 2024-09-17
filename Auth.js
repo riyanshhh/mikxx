@@ -20,7 +20,7 @@ document.getElementById('signupForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('signupEmail').value;
     const password = document.getElementById('signupPassword').value;
-    const username = document.getElementById('signupUsername').value; // Add this line
+    const username = document.getElementById('signupUsername').value; // Get username
 
     auth.createUserWithEmailAndPassword(email, password)
         .then((userCredential) => {
