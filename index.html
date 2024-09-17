@@ -13,17 +13,27 @@
             max-width: 400px; 
             margin: 0 auto; 
             padding: 20px;
-            background-color: #f0f2f5;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
         }
         .container {
             background-color: white;
             padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
         h1 { 
             text-align: center; 
-            color: #1877f2;
+            color: #4a90e2;
+            margin-bottom: 20px;
         }
         input, button { 
             display: block; 
@@ -33,45 +43,74 @@
             border: 1px solid #dddfe2;
             border-radius: 4px;
             font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
         input:focus {
             outline: none;
-            border-color: #1877f2;
+            border-color: #4a90e2;
+            box-shadow: 0 0 8px rgba(74, 144, 226, 0.2);
         }
         button { 
             cursor: pointer; 
-            background-color: #1877f2;
+            background-color: #4a90e2;
             color: white;
             font-weight: bold;
             border: none;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.3s;
         }
         button:hover {
-            background-color: #166fe5;
+            background-color: #357ab8;
+            transform: translateY(-2px);
         }
         .social-login {
             display: flex;
             justify-content: space-between;
         }
         .social-login button {
-            width: 48%;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            border: none;
+            transition: background-color 0.3s, transform 0.3s;
         }
         #googleLogin {
             background-color: #db4437;
         }
         #googleLogin:hover {
             background-color: #c53929;
+            transform: translateY(-2px);
         }
         #facebookLogin {
             background-color: #4267B2;
         }
         #facebookLogin:hover {
             background-color: #365899;
+            transform: translateY(-2px);
         }
         .or-divider {
             text-align: center;
             margin: 20px 0;
             color: #96999e;
+            position: relative;
+        }
+        .or-divider::before, .or-divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background-color: #dddfe2;
+        }
+        .or-divider::before {
+            left: 0;
+        }
+        .or-divider::after {
+            right: 0;
         }
         .tab {
             display: flex;
@@ -85,10 +124,12 @@
             cursor: pointer;
             font-size: 16px;
             font-weight: bold;
-            color: #1877f2;
+            color: #4a90e2;
+            transition: color 0.3s, border-bottom 0.3s;
         }
         .tab button.active {
-            border-bottom: 2px solid #1877f2;
+            border-bottom: 2px solid #4a90e2;
+            color: #357ab8;
         }
         .tab-content {
             display: none;
@@ -105,6 +146,19 @@
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
+            color: #4a90e2;
+        }
+        a {
+            color: #4a90e2;
+            text-decoration: none;
+            display: block;
+            text-align: right;
+            margin-top: -10px;
+            margin-bottom: 20px;
+            transition: color 0.3s;
+        }
+        a:hover {
+            color: #357ab8;
         }
     </style>
 </head>
@@ -126,6 +180,15 @@
                     <i class="fas fa-eye" id="toggleLoginPassword"></i>
                 </div>
                 <button type="submit">Login</button>
+                <a href="#" id="forgotPasswordLink">Forgot Password?</a>
+            </form>
+        </div>
+
+        <div id="resetPasswordContent" class="tab-content">
+            <form id="resetPasswordForm">
+                <h2><i class="fas fa-key"></i> Reset Password</h2>
+                <input type="email" id="resetEmail" placeholder="Email" required>
+                <button type="submit">Reset Password</button>
             </form>
         </div>
 
@@ -149,8 +212,8 @@
 
         <h2>Login with:</h2>
         <div class="social-login">
-            <button id="googleLogin"><i class="fab fa-google"></i> Google</button>
-            <button id="facebookLogin"><i class="fab fa-facebook-f"></i> Facebook</button>
+            <button id="googleLogin"><i class="fab fa-google"></i></button>
+            <button id="facebookLogin"><i class="fab fa-facebook-f"></i></button>
         </div>
 
         <div id="userInfo" style="display: none;">
@@ -167,6 +230,7 @@
             document.getElementById('signupTab').classList.remove('active');
             document.getElementById('loginContent').classList.add('active');
             document.getElementById('signupContent').classList.remove('active');
+            document.getElementById('resetPasswordContent').classList.remove('active'); // Hide reset password content
         });
 
         document.getElementById('signupTab').addEventListener('click', () => {
@@ -174,6 +238,14 @@
             document.getElementById('loginTab').classList.remove('active');
             document.getElementById('signupContent').classList.add('active');
             document.getElementById('loginContent').classList.remove('active');
+            document.getElementById('resetPasswordContent').classList.remove('active'); // Hide reset password content
+        });
+
+        document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('loginContent').classList.remove('active');
+            document.getElementById('signupContent').classList.remove('active');
+            document.getElementById('resetPasswordContent').classList.add('active'); // Show reset password content
         });
 
         // Toggle password visibility
@@ -196,6 +268,20 @@
         togglePasswordVisibility('loginPassword', 'toggleLoginPassword');
         togglePasswordVisibility('signupPassword', 'toggleSignupPassword');
         togglePasswordVisibility('signupPasswordConfirm', 'toggleSignupPasswordConfirm');
+
+        // Password reset functionality
+        document.getElementById('resetPasswordForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('resetEmail').value;
+            firebase.auth().sendPasswordResetEmail(email)
+                .then(() => {
+                    alert('Password reset email sent!');
+                    document.getElementById('loginTab').click(); // Switch back to login tab
+                })
+                .catch((error) => {
+                    alert('Error: ' + error.message);
+                });
+        });
     </script>
 </body>
 </html>
