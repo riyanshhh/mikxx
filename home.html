@@ -85,6 +85,7 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
     <script src="firebase.js"></script>
     <script>
         document.getElementById('logoutButton').addEventListener('click', () => {
@@ -105,12 +106,20 @@
         });
 
         function searchUserByEmail(email) {
-            const user = firebase.auth().currentUser;
-            if (user && user.email === email) {
-                document.getElementById('searchResult').innerHTML = `<p>User found: ${user.email}</p>`;
-            } else {
-                document.getElementById('searchResult').innerHTML = `<p>No user found with email: ${email}</p>`;
-            }
+            db.collection('users').where('email', '==', email).get()
+                .then((querySnapshot) => {
+                    if (!querySnapshot.empty) {
+                        querySnapshot.forEach((doc) => {
+                            const userData = doc.data();
+                            document.getElementById('searchResult').innerHTML = `<p>User found: ${userData.email}</p>`;
+                        });
+                    } else {
+                        document.getElementById('searchResult').innerHTML = `<p>No user found with email: ${email}</p>`;
+                    }
+                })
+                .catch((error) => {
+                    alert('Error: ' + error.message);
+                });
         }
     </script>
 </body>

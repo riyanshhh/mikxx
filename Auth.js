@@ -5,14 +5,13 @@ document.getElementById('loginForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
+
     auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            console.log('Login successful', userCredential.user);
-            // Redirect to home page after successful login
-            window.location.href = 'home.html';
+        .then(() => {
+            window.location.href = 'home.html'; // Redirect to home page
         })
         .catch((error) => {
-            console.error('Login error', error);
+            alert('Error: ' + error.message);
         });
 });
 
@@ -21,22 +20,22 @@ document.getElementById('signupForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('signupEmail').value;
     const password = document.getElementById('signupPassword').value;
-    const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
-
-    if (password !== passwordConfirm) {
-        alert('Passwords do not match');
-        return;
-    }
 
     auth.createUserWithEmailAndPassword(email, password)
         .then((userCredential) => {
-            console.log('Signup successful', userCredential.user);
-            // Display message and switch to login tab
-            alert('User created. Go to the login page to continue.');
-            document.getElementById('loginTab').click();
+            const user = userCredential.user;
+            // Save user data to Firestore
+            return db.collection('users').doc(user.uid).set({
+                email: user.email,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        })
+        .then(() => {
+            alert('User signed up and data saved!');
+            window.location.href = 'home.html'; // Redirect to home page
         })
         .catch((error) => {
-            console.error('Signup error', error);
+            alert('Error: ' + error.message);
         });
 });
 
