@@ -68,6 +68,10 @@
             margin: 5px 0;
             color: #8e8e8e;
         }
+        .profile-info .createdAt {
+            color: #8e8e8e;
+            font-size: 14px;
+        }
         .profile-actions button {
             background-color: #0095f6;
             color: white;
@@ -79,6 +83,29 @@
             font-size: 16px;
         }
         .profile-actions button:hover {
+            background-color: #007bb5;
+        }
+        .edit-form {
+            margin-top: 20px;
+        }
+        .edit-form input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #dddfe2;
+            border-radius: 4px;
+        }
+        .edit-form button {
+            background-color: #0095f6;
+            color: white;
+            font-weight: bold;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .edit-form button:hover {
             background-color: #007bb5;
         }
     </style>
@@ -97,10 +124,18 @@
             <div class="profile-info">
                 <h2 id="profileUsername">username</h2>
                 <p id="profileEmail">user@example.com</p>
+                <p class="createdAt" id="createdAt">Joined on: </p>
                 <div class="profile-actions">
-                    <button id="friendButton" class="friend-button">Add Friend</button>
+                    <button id="editProfileButton">Edit Profile</button>
                 </div>
             </div>
+        </div>
+        <div class="edit-form" id="editForm" style="display: none;">
+            <input type="text" id="editUsername" placeholder="New Username">
+            <input type="email" id="editEmail" placeholder="New Email">
+            <input type="text" id="editBio" placeholder="New Bio">
+            <input type="text" id="editProfilePicture" placeholder="New Profile Picture URL">
+            <button id="saveProfileButton">Save Changes</button>
         </div>
     </div>
 
@@ -110,20 +145,13 @@
     <script src="firebase.js"></script>
     <script>
         let currentUser;
-        let profileUser;
 
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
                 currentUser = user;
-                const urlParams = new URLSearchParams(window.location.search);
-                const email = urlParams.get('email');
-                if (email) {
-                    loadUserProfile(email);
-                } else {
-                    loadUserProfile(user.email);
-                }
+                loadUserProfile(user.email);
             } else {
-                window.location.href = 'index.html';
+                window.location.href = 'index.html'; // Redirect to login page if not signed in
             }
         });
 
@@ -131,9 +159,13 @@
             db.collection('users').doc(email).get()
                 .then((doc) => {
                     if (doc.exists) {
-                        profileUser = doc.data();
-                        profileUser.id = doc.id;
-                        updateProfileUI();
+                        const userData = doc.data();
+                        document.getElementById('profileUsername').textContent = userData.username || 'No username set';
+                        document.getElementById('profileEmail').textContent = userData.email;
+                        document.getElementById('createdAt').textContent = `Joined on: ${userData.createdAt.toDate().toLocaleDateString()}`;
+                        if (userData.profilePicture) {
+                            document.getElementById('profilePicture').src = userData.profilePicture;
+                        }
                     } else {
                         alert('No user found with the specified email.');
                     }
@@ -144,11 +176,42 @@
                 });
         }
 
-        function updateProfileUI() {
-            document.getElementById('profileUsername').textContent = profileUser.username || 'No username set';
-            document.getElementById('profileEmail').textContent = profileUser.email;
-            // Additional UI updates can be added here
-        }
+        document.getElementById('editProfileButton').addEventListener('click', () => {
+            document.getElementById('editForm').style.display = 'block';
+            document.getElementById('editUsername').value = document.getElementById('profileUsername').textContent;
+            document.getElementById('editEmail').value = document.getElementById('profileEmail').textContent;
+            document.getElementById('editBio').value = document.getElementById('profileBio').textContent || '';
+            document.getElementById('editProfilePicture').value = document.getElementById('profilePicture').src;
+        });
+
+        document.getElementById('saveProfileButton').addEventListener('click', () => {
+            const newUsername = document.getElementById('editUsername').value;
+            const newEmail = document.getElementById('editEmail').value;
+            const newBio = document.getElementById('editBio').value;
+            const newProfilePicture = document.getElementById('editProfilePicture').value;
+
+            if (newUsername && newEmail) {
+                // Update Firebase Authentication email
+                currentUser.updateEmail(newEmail).then(() => {
+                    // Update Firestore
+                    db.collection('users').doc(currentUser.email).update({
+                        username: newUsername,
+                        email: newEmail,
+                        bio: newBio,
+                        profilePicture: newProfilePicture
+                    }).then(() => {
+                        alert('Profile updated successfully!');
+                        loadUserProfile(newEmail); // Reload profile with new email
+                    }).catch((error) => {
+                        alert('Error updating profile: ' + error.message);
+                    });
+                }).catch((error) => {
+                    alert('Error updating email: ' + error.message);
+                });
+            } else {
+                alert('Please fill in all fields.');
+            }
+        });
 
         document.getElementById('logoutButton').addEventListener('click', () => {
             firebase.auth().signOut().then(() => {

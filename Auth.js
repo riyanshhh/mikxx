@@ -21,23 +21,39 @@ document.getElementById('signupForm').addEventListener('submit', (e) => {
     const email = document.getElementById('signupEmail').value;
     const password = document.getElementById('signupPassword').value;
     const username = document.getElementById('signupUsername').value; // Get username
+    const bio = document.getElementById('signupBio').value; // Get bio
+    const profilePicture = document.getElementById('signupProfilePicture').value; // Get profile picture URL
 
-    auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            const user = userCredential.user;
-            // Save user data to Firestore using username as the document ID
-            return db.collection('users').doc(username).set({
-                email: user.email,
-                username: username,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        })
-        .then(() => {
-            alert('User signed up and data saved!');
-            window.location.href = 'home.html'; // Redirect to home page
+    // Check if username is already taken
+    db.collection('users').doc(username).get()
+        .then((doc) => {
+            if (doc.exists) {
+                alert('Username is already taken. Please choose another one.');
+            } else {
+                // Proceed with signup
+                auth.createUserWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        const user = userCredential.user;
+                        // Save user data to Firestore using username as the document ID
+                        return db.collection('users').doc(username).set({
+                            email: user.email,
+                            username: username,
+                            bio: bio,
+                            profilePicture: profilePicture,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp() // Add createdAt timestamp
+                        });
+                    })
+                    .then(() => {
+                        alert('User signed up and data saved!');
+                        window.location.href = 'home.html'; // Redirect to home page
+                    })
+                    .catch((error) => {
+                        alert('Error: ' + error.message);
+                    });
+            }
         })
         .catch((error) => {
-            alert('Error: ' + error.message);
+            alert('Error checking username: ' + error.message);
         });
 });
 
