@@ -8,44 +8,28 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
+            background: #f0f2f5;
             margin: 0;
+            padding: 0;
         }
-        .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            width: 100%;
-            max-width: 600px;
-        }
-        h1 {
-            color: #4a90e2;
-        }
-        button {
-            cursor: pointer;
-            background-color: #4a90e2;
+        .navbar {
+            background-color: #4267B2;
             color: white;
-            font-weight: bold;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 4px;
-            transition: background-color 0.3s, transform 0.3s;
-        }
-        button:hover {
-            background-color: #357ab8;
-            transform: translateY(-2px);
-        }
-        .search-bar {
+            padding: 10px 20px;
             display: flex;
-            margin-bottom: 20px;
+            justify-content: space-between;
+            align-items: center;
         }
-        .search-bar input {
+        .navbar h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .navbar .search-bar {
+            display: flex;
+            margin: 0 20px;
+            flex: 1;
+        }
+        .navbar .search-bar input {
             flex: 1;
             padding: 10px;
             font-size: 16px;
@@ -53,42 +37,121 @@
             border-radius: 4px 0 0 4px;
             outline: none;
         }
-        .search-bar button {
+        .navbar .search-bar button {
             padding: 10px 20px;
             font-size: 16px;
             border: 1px solid #dddfe2;
             border-left: none;
             border-radius: 0 4px 4px 0;
-            background-color: #4a90e2;
+            background-color: #365899;
             color: white;
             cursor: pointer;
         }
-        .search-bar button:hover {
-            background-color: #357ab8;
+        .navbar .search-bar button:hover {
+            background-color: #2d4373;
+        }
+        .navbar .nav-icons {
+            display: flex;
+            align-items: center;
+        }
+        .navbar .nav-icons a, .navbar .nav-icons button {
+            color: white;
+            font-size: 20px;
+            margin-left: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .post-creation {
+            margin-bottom: 20px;
+        }
+        .post-creation textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #dddfe2;
+            border-radius: 4px;
+            outline: none;
+            resize: none;
+        }
+        .post-creation button {
+            background-color: #4267B2;
+            color: white;
+            font-weight: bold;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .post-creation button:hover {
+            background-color: #365899;
+        }
+        .feed {
+            margin-top: 20px;
+        }
+        .post {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .post h3 {
+            margin: 0 0 10px 0;
+        }
+        .post p {
+            margin: 0;
         }
         .search-result {
-            margin-top: 20px;
-            text-align: left;
+            position: absolute;
+            background-color: white;
+            border: 1px solid #dddfe2;
+            border-radius: 4px;
+            width: calc(100% - 40px);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
         }
-        .profile-link {
-            color: #4a90e2;
-            text-decoration: none;
-            font-weight: bold;
+        .search-result p {
+            margin: 0;
+            padding: 10px;
+            cursor: pointer;
         }
-        .profile-link:hover {
-            text-decoration: underline;
+        .search-result p:hover {
+            background-color: #f0f2f5;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Welcome to the Home Page</h1>
+    <div class="navbar">
+        <h1>MyApp</h1>
         <div class="search-bar">
             <input type="text" id="searchEmail" placeholder="Search by email">
             <button id="searchButton"><i class="fas fa-search"></i></button>
+            <div id="searchResult" class="search-result"></div>
         </div>
-        <div id="searchResult" class="search-result"></div>
-        <button id="logoutButton"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        <div class="nav-icons">
+            <a href="profile.html"><i class="fas fa-user"></i></a>
+            <button id="logoutButton"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </div>
+    <div class="container">
+        <div class="post-creation">
+            <textarea id="postContent" rows="3" placeholder="What's on your mind?"></textarea>
+            <button id="postButton">Post</button>
+        </div>
+        <div class="feed" id="feed">
+            <!-- Posts will be dynamically added here -->
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
@@ -113,25 +176,94 @@
             }
         });
 
+        document.getElementById('searchEmail').addEventListener('input', () => {
+            const email = document.getElementById('searchEmail').value;
+            if (email) {
+                searchUserByEmail(email);
+            } else {
+                document.getElementById('searchResult').innerHTML = '';
+            }
+        });
+
         function searchUserByEmail(email) {
             db.collection('users').where('email', '==', email).get()
                 .then((querySnapshot) => {
+                    const searchResult = document.getElementById('searchResult');
+                    searchResult.innerHTML = '';
                     if (!querySnapshot.empty) {
                         querySnapshot.forEach((doc) => {
                             const userData = doc.data();
-                            document.getElementById('searchResult').innerHTML = `
-                                <p>User found: ${userData.email}</p>
-                                <a href="profile.html?uid=${doc.id}" class="profile-link">View Profile</a>
-                            `;
+                            const resultItem = document.createElement('p');
+                            resultItem.textContent = userData.email;
+                            resultItem.addEventListener('click', () => {
+                                window.location.href = `profile.html?uid=${doc.id}`;
+                            });
+                            searchResult.appendChild(resultItem);
                         });
                     } else {
-                        document.getElementById('searchResult').innerHTML = `<p>No user found with email: ${email}</p>`;
+                        searchResult.innerHTML = `<p>No user found with email: ${email}</p>`;
                     }
                 })
                 .catch((error) => {
                     alert('Error: ' + error.message);
                 });
         }
+
+        document.getElementById('postButton').addEventListener('click', () => {
+            const content = document.getElementById('postContent').value;
+            if (content) {
+                createPost(content);
+            } else {
+                alert('Please enter some content to post.');
+            }
+        });
+
+        function createPost(content) {
+            const user = firebase.auth().currentUser;
+            if (user) {
+                db.collection('posts').add({
+                    content: content,
+                    email: user.email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => {
+                    document.getElementById('postContent').value = '';
+                    loadPosts();
+                }).catch((error) => {
+                    alert('Error: ' + error.message);
+                });
+            } else {
+                alert('You must be logged in to post.');
+            }
+        }
+
+        function loadPosts() {
+            db.collection('posts').orderBy('createdAt', 'desc').get()
+                .then((querySnapshot) => {
+                    const feed = document.getElementById('feed');
+                    feed.innerHTML = '';
+                    querySnapshot.forEach((doc) => {
+                        const post = doc.data();
+                        const postElement = document.createElement('div');
+                        postElement.classList.add('post');
+                        postElement.innerHTML = `
+                            <h3>${post.email}</h3>
+                            <p>${post.content}</p>
+                        `;
+                        feed.appendChild(postElement);
+                    });
+                }).catch((error) => {
+                    alert('Error: ' + error.message);
+                });
+        }
+
+        // Load posts on page load
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                loadPosts();
+            } else {
+                window.location.href = 'index.html'; // Redirect to login page if not signed in
+            }
+        });
     </script>
 </body>
 </html>

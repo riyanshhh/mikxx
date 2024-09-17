@@ -27,14 +27,27 @@
         h1 {
             color: #4a90e2;
         }
+        input, button {
+            display: block;
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 12px;
+            border: 1px solid #dddfe2;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 0 8px rgba(74, 144, 226, 0.2);
+        }
         button {
             cursor: pointer;
             background-color: #4a90e2;
             color: white;
             font-weight: bold;
             border: none;
-            padding: 12px 20px;
-            border-radius: 4px;
             transition: background-color 0.3s, transform 0.3s;
         }
         button:hover {
@@ -46,7 +59,11 @@
 <body>
     <div class="container">
         <h1>User Profile</h1>
-        <p id="userEmail"></p>
+        <form id="profileForm">
+            <input type="text" id="profileName" placeholder="Name">
+            <input type="email" id="profileEmail" placeholder="Email" disabled>
+            <button type="submit">Update Profile</button>
+        </form>
         <button id="logoutButton"><i class="fas fa-sign-out-alt"></i> Logout</button>
     </div>
 
@@ -55,14 +72,42 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
     <script src="firebase.js"></script>
     <script>
+        // Get user ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const uid = urlParams.get('uid');
+
         // Check if user is signed in
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-                document.getElementById('userEmail').textContent = `Email: ${user.email}`;
+                if (uid) {
+                    // Load profile data for the specified user
+                    loadUserProfile(uid);
+                } else {
+                    // Load profile data for the current user
+                    loadUserProfile(user.uid);
+                }
             } else {
                 window.location.href = 'index.html'; // Redirect to login page if not signed in
             }
         });
+
+        function loadUserProfile(uid) {
+            db.collection('users').doc(uid).get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        const userData = doc.data();
+                        document.getElementById('profileEmail').value = userData.email;
+                        if (userData.displayName) {
+                            document.getElementById('profileName').value = userData.displayName;
+                        }
+                    } else {
+                        alert('No user found with the specified ID.');
+                    }
+                })
+                .catch((error) => {
+                    alert('Error: ' + error.message);
+                });
+        }
 
         document.getElementById('logoutButton').addEventListener('click', () => {
             firebase.auth().signOut().then(() => {
@@ -70,6 +115,29 @@
             }).catch((error) => {
                 alert('Error: ' + error.message);
             });
+        });
+
+        document.getElementById('profileForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const user = firebase.auth().currentUser;
+            const displayName = document.getElementById('profileName').value;
+
+            if (user && user.uid === uid) {
+                user.updateProfile({
+                    displayName: displayName
+                }).then(() => {
+                    // Update Firestore
+                    return db.collection('users').doc(user.uid).update({
+                        displayName: displayName
+                    });
+                }).then(() => {
+                    alert('Profile updated successfully!');
+                }).catch((error) => {
+                    alert('Error: ' + error.message);
+                });
+            } else {
+                alert('You can only update your own profile.');
+            }
         });
     </script>
 </body>
