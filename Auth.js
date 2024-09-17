@@ -44,9 +44,15 @@ document.getElementById('googleLogin').addEventListener('click', () => {
     const provider = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider)
         .then((result) => {
-            console.log('Google login successful', result.user);
-            // Redirect to home page after successful login
-            window.location.href = 'home.html';
+            const user = result.user;
+            // Save user data to Firestore
+            return db.collection('users').doc(user.uid).set({
+                email: user.email,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+        })
+        .then(() => {
+            window.location.href = 'home.html'; // Redirect to home page
         })
         .catch((error) => {
             console.error('Google login error', error);
@@ -58,9 +64,15 @@ document.getElementById('facebookLogin').addEventListener('click', () => {
     const provider = new firebase.auth.FacebookAuthProvider();
     auth.signInWithPopup(provider)
         .then((result) => {
-            console.log('Facebook login successful', result.user);
-            // Redirect to home page after successful login
-            window.location.href = 'home.html';
+            const user = result.user;
+            // Save user data to Firestore
+            return db.collection('users').doc(user.uid).set({
+                email: user.email,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+        })
+        .then(() => {
+            window.location.href = 'home.html'; // Redirect to home page
         })
         .catch((error) => {
             console.error('Facebook login error', error);

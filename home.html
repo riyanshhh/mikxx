@@ -70,6 +70,14 @@
             margin-top: 20px;
             text-align: left;
         }
+        .profile-link {
+            color: #4a90e2;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .profile-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -111,7 +119,10 @@
                     if (!querySnapshot.empty) {
                         querySnapshot.forEach((doc) => {
                             const userData = doc.data();
-                            document.getElementById('searchResult').innerHTML = `<p>User found: ${userData.email}</p>`;
+                            document.getElementById('searchResult').innerHTML = `
+                                <p>User found: ${userData.email}</p>
+                                <a href="profile.html?uid=${doc.id}" class="profile-link">View Profile</a>
+                            `;
                         });
                     } else {
                         document.getElementById('searchResult').innerHTML = `<p>No user found with email: ${email}</p>`;

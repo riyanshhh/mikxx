@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Page</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+        }
+        h1 {
+            color: #4a90e2;
+        }
+        button {
+            cursor: pointer;
+            background-color: #4a90e2;
+            color: white;
+            font-weight: bold;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        button:hover {
+            background-color: #357ab8;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>User Profile</h1>
+        <p id="userEmail"></p>
+        <button id="logoutButton"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script src="firebase.js"></script>
+    <script>
+        // Check if user is signed in
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                document.getElementById('userEmail').textContent = `Email: ${user.email}`;
+            } else {
+                window.location.href = 'index.html'; // Redirect to login page if not signed in
+            }
+        });
+
+        document.getElementById('logoutButton').addEventListener('click', () => {
+            firebase.auth().signOut().then(() => {
+                window.location.href = 'index.html'; // Redirect to login page
+            }).catch((error) => {
+                alert('Error: ' + error.message);
+            });
+        });
+    </script>
+</body>
+</html>
