@@ -4,28 +4,114 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home Page</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             height: 100vh;
-            background-color: #f0f2f5;
+            margin: 0;
         }
         .container {
             background-color: white;
             padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             text-align: center;
+            width: 100%;
+            max-width: 600px;
+        }
+        h1 {
+            color: #4a90e2;
+        }
+        button {
+            cursor: pointer;
+            background-color: #4a90e2;
+            color: white;
+            font-weight: bold;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        button:hover {
+            background-color: #357ab8;
+            transform: translateY(-2px);
+        }
+        .search-bar {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .search-bar input {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #dddfe2;
+            border-radius: 4px 0 0 4px;
+            outline: none;
+        }
+        .search-bar button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: 1px solid #dddfe2;
+            border-left: none;
+            border-radius: 0 4px 4px 0;
+            background-color: #4a90e2;
+            color: white;
+            cursor: pointer;
+        }
+        .search-bar button:hover {
+            background-color: #357ab8;
+        }
+        .search-result {
+            margin-top: 20px;
+            text-align: left;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to the Home Page!</h1>
-        <p>You have successfully logged in.</p>
+        <h1>Welcome to the Home Page</h1>
+        <div class="search-bar">
+            <input type="text" id="searchEmail" placeholder="Search by email">
+            <button id="searchButton"><i class="fas fa-search"></i></button>
+        </div>
+        <div id="searchResult" class="search-result"></div>
+        <button id="logoutButton"><i class="fas fa-sign-out-alt"></i> Logout</button>
     </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="firebase.js"></script>
+    <script>
+        document.getElementById('logoutButton').addEventListener('click', () => {
+            firebase.auth().signOut().then(() => {
+                window.location.href = 'index.html'; // Redirect to login page
+            }).catch((error) => {
+                alert('Error: ' + error.message);
+            });
+        });
+
+        document.getElementById('searchButton').addEventListener('click', () => {
+            const email = document.getElementById('searchEmail').value;
+            if (email) {
+                searchUserByEmail(email);
+            } else {
+                alert('Please enter an email to search.');
+            }
+        });
+
+        function searchUserByEmail(email) {
+            const user = firebase.auth().currentUser;
+            if (user && user.email === email) {
+                document.getElementById('searchResult').innerHTML = `<p>User found: ${user.email}</p>`;
+            } else {
+                document.getElementById('searchResult').innerHTML = `<p>No user found with email: ${email}</p>`;
+            }
+        }
+    </script>
 </body>
 </html>
