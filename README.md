@@ -9,7 +9,7 @@ This project demonstrates how to use Firebase Authentication with a simple login
 - Password reset functionality
 - Search for users by email
 - View and update user profile
-- Create and view posts (similar to Facebook)
+- Create and view posts (similar to Facebook and Instagram)
 
 ## Setup
 
@@ -31,7 +31,7 @@ The home page where users can search for other users by email, create posts, and
 
 ### `profile.html`
 
-The profile page for each user, where they can view and update their profile information.
+The profile page for each user, where they can view and update their profile information and see their posts in a grid layout.
 
 ## Firebase Configuration
 

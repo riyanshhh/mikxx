@@ -8,13 +8,13 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f2f5;
+            background: #fafafa;
             margin: 0;
             padding: 0;
         }
         .navbar {
-            background-color: #4267B2;
-            color: white;
+            background-color: white;
+            border-bottom: 1px solid #dbdbdb;
             padding: 10px 20px;
             display: flex;
             justify-content: space-between;
@@ -23,6 +23,7 @@
         .navbar h1 {
             margin: 0;
             font-size: 24px;
+            color: #262626;
         }
         .navbar .search-bar {
             display: flex;
@@ -43,19 +44,19 @@
             border: 1px solid #dddfe2;
             border-left: none;
             border-radius: 0 4px 4px 0;
-            background-color: #365899;
+            background-color: #0095f6;
             color: white;
             cursor: pointer;
         }
         .navbar .search-bar button:hover {
-            background-color: #2d4373;
+            background-color: #007bb5;
         }
         .navbar .nav-icons {
             display: flex;
             align-items: center;
         }
         .navbar .nav-icons a, .navbar .nav-icons button {
-            color: white;
+            color: #262626;
             font-size: 20px;
             margin-left: 20px;
             background: none;
@@ -63,53 +64,20 @@
             cursor: pointer;
         }
         .container {
-            max-width: 600px;
+            max-width: 935px;
             margin: 20px auto;
             padding: 20px;
             background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #dbdbdb;
+            border-radius: 3px;
+            display: flex;
         }
-        .post-creation {
-            margin-bottom: 20px;
+        .main-content {
+            flex: 3;
         }
-        .post-creation textarea {
-            width: 100%;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #dddfe2;
-            border-radius: 4px;
-            outline: none;
-            resize: none;
-        }
-        .post-creation button {
-            background-color: #4267B2;
-            color: white;
-            font-weight: bold;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .post-creation button:hover {
-            background-color: #365899;
-        }
-        .feed {
-            margin-top: 20px;
-        }
-        .post {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-        .post h3 {
-            margin: 0 0 10px 0;
-        }
-        .post p {
-            margin: 0;
+        .sidebar {
+            flex: 1;
+            margin-left: 20px;
         }
         .search-result {
             position: absolute;
@@ -129,11 +97,29 @@
         .search-result p:hover {
             background-color: #f0f2f5;
         }
+        .friends-list {
+            background-color: white;
+            padding: 20px;
+            border-radius: 3px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .friends-list h3 {
+            margin: 0 0 10px 0;
+            color: #262626;
+        }
+        .friends-list p {
+            margin: 0;
+            color: #262626;
+            cursor: pointer;
+        }
+        .friends-list p:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="navbar">
-        <h1>MyApp</h1>
+        <h1>Mikxx</h1>
         <div class="search-bar">
             <input type="text" id="searchEmail" placeholder="Search by email">
             <button id="searchButton"><i class="fas fa-search"></i></button>
@@ -145,12 +131,15 @@
         </div>
     </div>
     <div class="container">
-        <div class="post-creation">
-            <textarea id="postContent" rows="3" placeholder="What's on your mind?"></textarea>
-            <button id="postButton">Post</button>
+        <div class="main-content">
+            <h2>Welcome to Mikxx</h2>
+            <p>Use the search bar to find friends and view their profiles.</p>
         </div>
-        <div class="feed" id="feed">
-            <!-- Posts will be dynamically added here -->
+        <div class="sidebar">
+            <div class="friends-list" id="friendsList">
+                <h3>Friends</h3>
+                <!-- Friends will be dynamically added here -->
+            </div>
         </div>
     </div>
 
@@ -196,7 +185,7 @@
                             const resultItem = document.createElement('p');
                             resultItem.textContent = userData.email;
                             resultItem.addEventListener('click', () => {
-                                window.location.href = `profile.html?uid=${doc.id}`;
+                                window.location.href = `profile.html?email=${userData.email}`;
                             });
                             searchResult.appendChild(resultItem);
                         });
@@ -209,57 +198,46 @@
                 });
         }
 
-        document.getElementById('postButton').addEventListener('click', () => {
-            const content = document.getElementById('postContent').value;
-            if (content) {
-                createPost(content);
-            } else {
-                alert('Please enter some content to post.');
-            }
-        });
-
-        function createPost(content) {
+        function loadFriends() {
             const user = firebase.auth().currentUser;
             if (user) {
-                db.collection('posts').add({
-                    content: content,
-                    email: user.email,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                }).then(() => {
-                    document.getElementById('postContent').value = '';
-                    loadPosts();
-                }).catch((error) => {
-                    alert('Error: ' + error.message);
-                });
-            } else {
-                alert('You must be logged in to post.');
+                db.collection('users').doc(user.uid).get()
+                    .then((doc) => {
+                        if (doc.exists) {
+                            const userData = doc.data();
+                            const friendsList = document.getElementById('friendsList');
+                            friendsList.innerHTML = '<h3>Friends</h3>';
+                            if (userData.friends && userData.friends.length > 0) {
+                                userData.friends.forEach((friendId) => {
+                                    db.collection('users').doc(friendId).get()
+                                        .then((friendDoc) => {
+                                            if (friendDoc.exists) {
+                                                const friendData = friendDoc.data();
+                                                const friendItem = document.createElement('p');
+                                                friendItem.textContent = friendData.email;
+                                                friendItem.addEventListener('click', () => {
+                                                    window.location.href = `profile.html?email=${friendData.email}`;
+                                                });
+                                                friendsList.appendChild(friendItem);
+                                            }
+                                        }).catch((error) => {
+                                            console.error('Error fetching friend data:', error);
+                                        });
+                                });
+                            } else {
+                                friendsList.innerHTML += '<p>No friends added yet.</p>';
+                            }
+                        }
+                    }).catch((error) => {
+                        console.error('Error fetching user data:', error);
+                    });
             }
         }
 
-        function loadPosts() {
-            db.collection('posts').orderBy('createdAt', 'desc').get()
-                .then((querySnapshot) => {
-                    const feed = document.getElementById('feed');
-                    feed.innerHTML = '';
-                    querySnapshot.forEach((doc) => {
-                        const post = doc.data();
-                        const postElement = document.createElement('div');
-                        postElement.classList.add('post');
-                        postElement.innerHTML = `
-                            <h3>${post.email}</h3>
-                            <p>${post.content}</p>
-                        `;
-                        feed.appendChild(postElement);
-                    });
-                }).catch((error) => {
-                    alert('Error: ' + error.message);
-                });
-        }
-
-        // Load posts on page load
+        // Load friends on page load
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-                loadPosts();
+                loadFriends();
             } else {
                 window.location.href = 'index.html'; // Redirect to login page if not signed in
             }
