@@ -8,8 +8,10 @@ const firebaseConfig = {
   appId: "YOUR_APP_ID"
 };
 
+// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore(); // Initialize Firestore
+
+// Initialize Firestore
+const db = firebase.firestore(); // Make sure this line is present
 
 // For better security, consider using environment variables or a secure configuration management system
