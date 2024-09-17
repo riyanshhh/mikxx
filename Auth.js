@@ -1,0 +1,106 @@
+const auth = firebase.auth();
+
+// Login form submission
+document.getElementById('loginForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            console.log('Login successful', userCredential.user);
+            // Redirect to home page after successful login
+            window.location.href = 'home.html';
+        })
+        .catch((error) => {
+            console.error('Login error', error);
+        });
+});
+
+// Signup form submission
+document.getElementById('signupForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('signupEmail').value;
+    const password = document.getElementById('signupPassword').value;
+    const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
+
+    if (password !== passwordConfirm) {
+        alert('Passwords do not match');
+        return;
+    }
+
+    auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            console.log('Signup successful', userCredential.user);
+            // Display message and switch to login tab
+            alert('User created. Go to the login page to continue.');
+            document.getElementById('loginTab').click();
+        })
+        .catch((error) => {
+            console.error('Signup error', error);
+        });
+});
+
+// Google login
+document.getElementById('googleLogin').addEventListener('click', () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider)
+        .then((result) => {
+            console.log('Google login successful', result.user);
+            // Redirect to home page after successful login
+            window.location.href = 'home.html';
+        })
+        .catch((error) => {
+            console.error('Google login error', error);
+        });
+});
+
+// Facebook login
+document.getElementById('facebookLogin').addEventListener('click', () => {
+    const provider = new firebase.auth.FacebookAuthProvider();
+    auth.signInWithPopup(provider)
+        .then((result) => {
+            console.log('Facebook login successful', result.user);
+            // Redirect to home page after successful login
+            window.location.href = 'home.html';
+        })
+        .catch((error) => {
+            console.error('Facebook login error', error);
+        });
+});
+
+// Logout
+document.getElementById('logoutButton').addEventListener('click', () => {
+    auth.signOut()
+        .then(() => {
+            console.log('User signed out');
+        })
+        .catch((error) => {
+            console.error('Logout error', error);
+        });
+});
+
+// Auth state change listener
+auth.onAuthStateChanged((user) => {
+    const userInfo = document.getElementById('userInfo');
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    const googleLogin = document.getElementById('googleLogin');
+    const facebookLogin = document.getElementById('facebookLogin');
+
+    if (user) {
+        console.log('User is signed in', user);
+        document.getElementById('userName').textContent = user.displayName || user.email;
+        userInfo.style.display = 'block';
+        loginForm.style.display = 'none';
+        signupForm.style.display = 'none';
+        googleLogin.style.display = 'none';
+        facebookLogin.style.display = 'none';
+    } else {
+        console.log('No user is signed in');
+        userInfo.style.display = 'none';
+        loginForm.style.display = 'block';
+        signupForm.style.display = 'block';
+        googleLogin.style.display = 'block';
+        facebookLogin.style.display = 'block';
+    }
+});
