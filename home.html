@@ -115,6 +115,28 @@
         .friends-list p:hover {
             text-decoration: underline;
         }
+        .friend-requests {
+            background-color: white;
+            padding: 20px;
+            border-radius: 3px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .friend-requests h3 {
+            margin: 0 0 10px 0;
+            color: #262626;
+        }
+        .friend-request {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .friend-request button {
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -126,7 +148,7 @@
             <div id="searchResult" class="search-result"></div>
         </div>
         <div class="nav-icons">
-            <a href="profile.html"><i class="fas fa-user"></i></a>
+            <a href="profile.html" id="profileLink"><i class="fas fa-user"></i></a>
             <button id="logoutButton"><i class="fas fa-sign-out-alt"></i></button>
         </div>
     </div>
@@ -136,6 +158,10 @@
             <p>Use the search bar to find friends and view their profiles.</p>
         </div>
         <div class="sidebar">
+            <div class="friend-requests" id="friendRequests">
+                <h3>Friend Requests</h3>
+                <!-- Friend requests will be dynamically added here -->
+            </div>
             <div class="friends-list" id="friendsList">
                 <h3>Friends</h3>
                 <!-- Friends will be dynamically added here -->
@@ -234,10 +260,77 @@
             }
         }
 
-        // Load friends on page load
+        function loadFriendRequests() {
+            const user = firebase.auth().currentUser;
+            if (user) {
+                db.collection('friendRequests')
+                    .where('receiver', '==', user.uid)
+                    .where('status', '==', 'pending')
+                    .get()
+                    .then((querySnapshot) => {
+                        const friendRequests = document.getElementById('friendRequests');
+                        friendRequests.innerHTML = '<h3>Friend Requests</h3>';
+                        querySnapshot.forEach((doc) => {
+                            const request = doc.data();
+                            db.collection('users').doc(request.sender).get()
+                                .then((senderDoc) => {
+                                    const sender = senderDoc.data();
+                                    const requestElement = document.createElement('div');
+                                    requestElement.className = 'friend-request';
+                                    requestElement.innerHTML = `
+                                        <span>${sender.email}</span>
+                                        <div>
+                                            <button onclick="acceptFriendRequest('${doc.id}')">Accept</button>
+                                            <button onclick="rejectFriendRequest('${doc.id}')">Reject</button>
+                                        </div>
+                                    `;
+                                    friendRequests.appendChild(requestElement);
+                                });
+                        });
+                    });
+            }
+        }
+
+        function acceptFriendRequest(requestId) {
+            const user = firebase.auth().currentUser;
+            db.collection('friendRequests').doc(requestId).get()
+                .then((doc) => {
+                    const request = doc.data();
+                    return db.runTransaction((transaction) => {
+                        transaction.update(db.collection('friendRequests').doc(requestId), { status: 'accepted' });
+                        transaction.update(db.collection('users').doc(user.uid), {
+                            friends: firebase.firestore.FieldValue.arrayUnion(request.sender)
+                        });
+                        transaction.update(db.collection('users').doc(request.sender), {
+                            friends: firebase.firestore.FieldValue.arrayUnion(user.uid)
+                        });
+                    });
+                })
+                .then(() => {
+                    loadFriendRequests();
+                    loadFriends();
+                })
+                .catch((error) => {
+                    console.error('Error accepting friend request:', error);
+                });
+        }
+
+        function rejectFriendRequest(requestId) {
+            db.collection('friendRequests').doc(requestId).delete()
+                .then(() => {
+                    loadFriendRequests();
+                })
+                .catch((error) => {
+                    console.error('Error rejecting friend request:', error);
+                });
+        }
+
+        // Update the profile link to include the user's email
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
+                document.getElementById('profileLink').href = `profile.html?email=${user.email}`;
                 loadFriends();
+                loadFriendRequests();
             } else {
                 window.location.href = 'index.html'; // Redirect to login page if not signed in
             }
