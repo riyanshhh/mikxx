@@ -112,7 +112,7 @@
 </head>
 <body>
     <div class="navbar">
-        <h1>Mikxx</h1>
+        <h1>MyApp</h1>
         <div class="nav-icons">
             <a href="home.html"><i class="fas fa-home"></i></a>
             <button id="logoutButton"><i class="fas fa-sign-out-alt"></i></button>
@@ -122,24 +122,9 @@
         <div class="profile-header">
             <img id="profilePicture" class="profile-picture" src="https://via.placeholder.com/150" alt="Profile Picture">
             <div class="profile-info">
-                <h2 id="profileEmail">user@example.com</h2>
-                <div class="profile-stats">
-                    <div class="profile-stat">
-                        <span id="postsCount">0</span> posts
-                    </div>
-                    <div class="profile-stat">
-                        <span id="friendsCount">0</span> friends
-                    </div>
-                </div>
-                <div class="profile-bio" id="profileBio"></div>
-                <div class="profile-actions">
-                    <button id="friendActionButton" style="display: none;">Add Friend</button>
-                    <button id="editProfileButton" style="display: none;">Edit Profile</button>
-                </div>
+                <h2 id="profileUsername">username</h2>
+                <p id="profileEmail">user@example.com</p>
             </div>
-        </div>
-        <div class="profile-posts" id="profilePosts">
-            <!-- Posts will be dynamically added here -->
         </div>
     </div>
 
@@ -148,33 +133,22 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
     <script src="firebase.js"></script>
     <script>
-        let currentUser;
-        let profileUser;
-
+        // Check if user is signed in
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-                currentUser = user;
-                const urlParams = new URLSearchParams(window.location.search);
-                const email = urlParams.get('email');
-                if (email && email !== user.email) {
-                    loadUserProfile(email);
-                } else {
-                    loadUserProfile(user.email);
-                }
+                loadUserProfile(user.email);
             } else {
-                window.location.href = 'index.html';
+                window.location.href = 'index.html'; // Redirect to login page if not signed in
             }
         });
 
         function loadUserProfile(email) {
-            firebase.firestore().collection('users').doc(email).get()
+            db.collection('users').doc(email).get()
                 .then((doc) => {
                     if (doc.exists) {
-                        profileUser = doc.data();
-                        profileUser.id = doc.id;
-                        updateProfileUI();
-                        loadUserPosts();
-                        updateFriendActionButton();
+                        const userData = doc.data();
+                        document.getElementById('profileUsername').textContent = userData.username;
+                        document.getElementById('profileEmail').textContent = userData.email;
                     } else {
                         alert('No user found with the specified email.');
                     }
@@ -185,166 +159,10 @@
                 });
         }
 
-        function updateProfileUI() {
-            document.getElementById('profileEmail').textContent = profileUser.email;
-            document.getElementById('profileBio').textContent = profileUser.bio || 'No bio available';
-            document.getElementById('friendsCount').textContent = profileUser.friends ? profileUser.friends.length : 0;
-            if (profileUser.profilePicture) {
-                document.getElementById('profilePicture').src = profileUser.profilePicture;
-            }
-            if (currentUser.email === profileUser.id) {
-                document.getElementById('editProfileButton').style.display = 'inline-block';
-            } else {
-                document.getElementById('friendActionButton').style.display = 'inline-block';
-            }
-        }
-
-        function loadUserPosts() {
-            firebase.firestore().collection('posts')
-                .where('userId', '==', profileUser.id)
-                .orderBy('createdAt', 'desc')
-                .get()
-                .then((querySnapshot) => {
-                    const profilePosts = document.getElementById('profilePosts');
-                    profilePosts.innerHTML = '';
-                    document.getElementById('postsCount').textContent = querySnapshot.size;
-                    querySnapshot.forEach((doc) => {
-                        const post = doc.data();
-                        const postElement = document.createElement('div');
-                        postElement.className = 'profile-post';
-                        postElement.innerHTML = `<img src="${post.imageUrl || 'https://via.placeholder.com/300'}" alt="Post">`;
-                        profilePosts.appendChild(postElement);
-                    });
-                })
-                .catch((error) => {
-                    console.error('Error loading posts:', error);
-                });
-        }
-
-        function updateFriendActionButton() {
-            const friendActionButton = document.getElementById('friendActionButton');
-            if (currentUser.email === profileUser.id) {
-                friendActionButton.style.display = 'none';
-                return;
-            }
-            
-            firebase.firestore().collection('friendRequests')
-                .where('sender', 'in', [currentUser.email, profileUser.id])
-                .where('receiver', 'in', [currentUser.email, profileUser.id])
-                .get()
-                .then((querySnapshot) => {
-                    if (querySnapshot.empty) {
-                        friendActionButton.textContent = 'Add Friend';
-                        friendActionButton.onclick = sendFriendRequest;
-                    } else {
-                        const request = querySnapshot.docs[0].data();
-                        if (request.status === 'pending') {
-                            if (request.sender === currentUser.email) {
-                                friendActionButton.textContent = 'Cancel Request';
-                                friendActionButton.onclick = cancelFriendRequest;
-                            } else {
-                                friendActionButton.textContent = 'Accept Request';
-                                friendActionButton.onclick = acceptFriendRequest;
-                            }
-                        } else if (request.status === 'accepted') {
-                            friendActionButton.textContent = 'Unfriend';
-                            friendActionButton.onclick = unfriend;
-                        }
-                    }
-                });
-        }
-
-        function sendFriendRequest() {
-            firebase.firestore().collection('friendRequests').add({
-                sender: currentUser.email,
-                receiver: profileUser.id,
-                status: 'pending',
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                updateFriendActionButton();
-            }).catch((error) => {
-                console.error("Error sending friend request:", error);
-                alert('Error: ' + error.message);
-            });
-        }
-
-        function cancelFriendRequest() {
-            firebase.firestore().collection('friendRequests')
-                .where('sender', '==', currentUser.email)
-                .where('receiver', '==', profileUser.id)
-                .where('status', '==', 'pending')
-                .get()
-                .then((querySnapshot) => {
-                    querySnapshot.forEach((doc) => {
-                        doc.ref.delete().then(() => {
-                            updateFriendActionButton();
-                        });
-                    });
-                }).catch((error) => {
-                    console.error("Error canceling friend request:", error);
-                    alert('Error: ' + error.message);
-                });
-        }
-
-        function acceptFriendRequest() {
-            firebase.firestore().collection('friendRequests')
-                .where('sender', '==', profileUser.id)
-                .where('receiver', '==', currentUser.email)
-                .where('status', '==', 'pending')
-                .get()
-                .then((querySnapshot) => {
-                    querySnapshot.forEach((doc) => {
-                        doc.ref.update({ status: 'accepted' }).then(() => {
-                            firebase.firestore().collection('users').doc(currentUser.email).update({
-                                friends: firebase.firestore.FieldValue.arrayUnion(profileUser.id)
-                            });
-                            firebase.firestore().collection('users').doc(profileUser.id).update({
-                                friends: firebase.firestore.FieldValue.arrayUnion(currentUser.email)
-                            });
-                            updateFriendActionButton();
-                            loadUserProfile(profileUser.id);
-                        });
-                    });
-                }).catch((error) => {
-                    console.error("Error accepting friend request:", error);
-                    alert('Error: ' + error.message);
-                });
-        }
-
-        function unfriend() {
-            firebase.firestore().collection('users').doc(currentUser.email).update({
-                friends: firebase.firestore.FieldValue.arrayRemove(profileUser.id)
-            });
-            firebase.firestore().collection('users').doc(profileUser.id).update({
-                friends: firebase.firestore.FieldValue.arrayRemove(currentUser.email)
-            }).then(() => {
-                updateFriendActionButton();
-                loadUserProfile(profileUser.id);
-            }).catch((error) => {
-                console.error("Error unfriending:", error);
-                alert('Error: ' + error.message);
-            });
-        }
-
-        document.getElementById('editProfileButton').addEventListener('click', () => {
-            const newBio = prompt('Enter your new bio:', profileUser.bio || '');
-            if (newBio !== null) {
-                firebase.firestore().collection('users').doc(currentUser.email).update({
-                    bio: newBio
-                }).then(() => {
-                    loadUserProfile(currentUser.email);
-                }).catch((error) => {
-                    console.error("Error updating bio:", error);
-                    alert('Error: ' + error.message);
-                });
-            }
-        });
-
         document.getElementById('logoutButton').addEventListener('click', () => {
             firebase.auth().signOut().then(() => {
-                window.location.href = 'index.html';
+                window.location.href = 'index.html'; // Redirect to login page
             }).catch((error) => {
-                console.error("Error signing out:", error);
                 alert('Error: ' + error.message);
             });
         });

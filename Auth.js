@@ -20,13 +20,15 @@ document.getElementById('signupForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('signupEmail').value;
     const password = document.getElementById('signupPassword').value;
+    const username = document.getElementById('signupUsername').value; // Add this line
 
     auth.createUserWithEmailAndPassword(email, password)
         .then((userCredential) => {
             const user = userCredential.user;
-            // Save user data to Firestore using email as the document ID
-            return db.collection('users').doc(email).set({
+            // Save user data to Firestore using username as the document ID
+            return db.collection('users').doc(username).set({
                 email: user.email,
+                username: username,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
         })
@@ -45,11 +47,20 @@ document.getElementById('googleLogin').addEventListener('click', () => {
     auth.signInWithPopup(provider)
         .then((result) => {
             const user = result.user;
-            // Save user data to Firestore
-            return db.collection('users').doc(user.uid).set({
-                email: user.email,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
+            // Check if user data exists in Firestore
+            return db.collection('users').doc(user.email).get().then((doc) => {
+                if (!doc.exists) {
+                    // Prompt for username if not set
+                    const username = prompt('Please set a username:');
+                    if (username) {
+                        return db.collection('users').doc(user.email).set({
+                            email: user.email,
+                            username: username,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                }
+            });
         })
         .then(() => {
             window.location.href = 'home.html'; // Redirect to home page
@@ -65,11 +76,20 @@ document.getElementById('facebookLogin').addEventListener('click', () => {
     auth.signInWithPopup(provider)
         .then((result) => {
             const user = result.user;
-            // Save user data to Firestore
-            return db.collection('users').doc(user.uid).set({
-                email: user.email,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
+            // Check if user data exists in Firestore
+            return db.collection('users').doc(user.email).get().then((doc) => {
+                if (!doc.exists) {
+                    // Prompt for username if not set
+                    const username = prompt('Please set a username:');
+                    if (username) {
+                        return db.collection('users').doc(user.email).set({
+                            email: user.email,
+                            username: username,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                }
+            });
         })
         .then(() => {
             window.location.href = 'home.html'; // Redirect to home page

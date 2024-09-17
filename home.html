@@ -143,7 +143,7 @@
     <div class="navbar">
         <h1>Mikxx</h1>
         <div class="search-bar">
-            <input type="text" id="searchEmail" placeholder="Search by email">
+            <input type="text" id="searchUsername" placeholder="Search by username">
             <button id="searchButton"><i class="fas fa-search"></i></button>
             <div id="searchResult" class="search-result"></div>
         </div>
@@ -183,25 +183,25 @@
         });
 
         document.getElementById('searchButton').addEventListener('click', () => {
-            const email = document.getElementById('searchEmail').value;
-            if (email) {
-                searchUserByEmail(email);
+            const username = document.getElementById('searchUsername').value;
+            if (username) {
+                searchUserByUsername(username);
             } else {
-                alert('Please enter an email to search.');
+                alert('Please enter a username to search.');
             }
         });
 
-        document.getElementById('searchEmail').addEventListener('input', () => {
-            const email = document.getElementById('searchEmail').value;
-            if (email) {
-                searchUserByEmail(email);
+        document.getElementById('searchUsername').addEventListener('input', () => {
+            const username = document.getElementById('searchUsername').value;
+            if (username) {
+                searchUserByUsername(username);
             } else {
                 document.getElementById('searchResult').innerHTML = '';
             }
         });
 
-        function searchUserByEmail(email) {
-            firebase.firestore().collection('users').where('email', '==', email).get()
+        function searchUserByUsername(username) {
+            firebase.firestore().collection('users').where('username', '==', username).get()
                 .then((querySnapshot) => {
                     const searchResult = document.getElementById('searchResult');
                     searchResult.innerHTML = '';
@@ -209,14 +209,14 @@
                         querySnapshot.forEach((doc) => {
                             const userData = doc.data();
                             const resultItem = document.createElement('p');
-                            resultItem.textContent = userData.email;
+                            resultItem.textContent = userData.username;
                             resultItem.addEventListener('click', () => {
-                                openUserProfile(userData.email);
+                                openUserProfile(userData.username);
                             });
                             searchResult.appendChild(resultItem);
                         });
                     } else {
-                        searchResult.innerHTML = `<p>No user found with email: ${email}</p>`;
+                        searchResult.innerHTML = `<p>No user found with username: ${username}</p>`;
                     }
                 })
                 .catch((error) => {
@@ -225,8 +225,8 @@
                 });
         }
 
-        function openUserProfile(email) {
-            window.location.href = `profile.html?email=${email}`;
+        function openUserProfile(username) {
+            window.location.href = `profile.html?username=${username}`;
         }
 
         function loadFriends() {
@@ -239,15 +239,15 @@
                             const friendsList = document.getElementById('friendsList');
                             friendsList.innerHTML = '<h3>Friends</h3>';
                             if (userData.friends && userData.friends.length > 0) {
-                                userData.friends.forEach((friendEmail) => {
-                                    firebase.firestore().collection('users').doc(friendEmail).get()
+                                userData.friends.forEach((friendUsername) => {
+                                    firebase.firestore().collection('users').doc(friendUsername).get()
                                         .then((friendDoc) => {
                                             if (friendDoc.exists) {
                                                 const friendData = friendDoc.data();
                                                 const friendItem = document.createElement('p');
-                                                friendItem.textContent = friendData.email;
+                                                friendItem.textContent = friendData.username;
                                                 friendItem.addEventListener('click', () => {
-                                                    window.location.href = `profile.html?email=${friendData.email}`;
+                                                    window.location.href = `profile.html?username=${friendData.username}`;
                                                 });
                                                 friendsList.appendChild(friendItem);
                                             }
