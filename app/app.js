@@ -7,6 +7,12 @@ const endCallButton = document.getElementById('endCall');
 const localVideo = document.getElementById('localVideo');
 const remoteVideo = document.getElementById('remoteVideo');
 
+// Firebase signaling listener
+database.ref('signals').on('child_added', (snapshot) => {
+    const signal = snapshot.val();
+    handleSignal(signal);
+});
+
 startCallButton.onclick = startCall;
 endCallButton.onclick = endCall;
 
@@ -57,5 +63,3 @@ peerConnection.onicecandidate = (event) => {
         sendSignal({ candidate: event.candidate });
     }
 };
-
-// Implement signaling logic (e.g., using Firebase)
