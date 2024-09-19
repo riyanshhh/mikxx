@@ -45,15 +45,11 @@ function endCall() {
 
 function handleSignal(signal) {
     if (signal.type === 'offer') {
-        peerConnection.setRemoteDescription(new RTCSessionDescription(signal.offer));
-        peerConnection.createAnswer().then(answer => {
-            peerConnection.setLocalDescription(answer);
-            sendSignal({ type: 'answer', answer: answer });
-        });
+        // Handle offer
     } else if (signal.type === 'answer') {
-        peerConnection.setRemoteDescription(new RTCSessionDescription(signal.answer));
+        // Handle answer
     } else if (signal.candidate) {
-        peerConnection.addIceCandidate(new RTCIceCandidate(signal.candidate));
+        // Handle ICE candidate
     }
 }
 

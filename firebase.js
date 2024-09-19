@@ -14,6 +14,7 @@ const database = firebase.database();
 
 // Function to send signaling data
 function sendSignal(signal) {
+    console.log("Sending signal:", signal);
     database.ref('signals').push(signal);
 }
 
@@ -22,3 +23,9 @@ database.ref('signals').on('child_added', (snapshot) => {
     const signal = snapshot.val();
     handleSignal(signal);
 });
+
+// Function to handle incoming signals
+function handleSignal(signal) {
+    console.log("Received signal:", signal);
+    // Handle the signal as before
+}
