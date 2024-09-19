@@ -27,7 +27,34 @@ database.ref('signals').on('child_added', (snapshot) => {
 // Function to handle incoming signals
 function handleSignal(signal) {
     console.log("Received signal:", signal);
-    // Handle the signal as before
+    if (signal.type === 'offer') {
+        // Handle the offer
+        peerConnection.setRemoteDescription(new RTCSessionDescription(signal.offer))
+            .then(() => {
+                return peerConnection.createAnswer(); // Create an answer
+            })
+            .then(answer => {
+                return peerConnection.setLocalDescription(answer); // Set the local description
+            })
+            .then(() => {
+                sendSignal({ type: 'answer', answer: peerConnection.localDescription }); // Send the answer
+            })
+            .catch(error => {
+                console.error("Error handling offer:", error);
+            });
+    } else if (signal.type === 'answer') {
+        // Handle the answer
+        peerConnection.setRemoteDescription(new RTCSessionDescription(signal.answer))
+            .catch(error => {
+                console.error("Error setting remote description for answer:", error);
+            });
+    } else if (signal.candidate) {
+        // Handle ICE candidate
+        peerConnection.addIceCandidate(new RTCIceCandidate(signal.candidate))
+            .catch(error => {
+                console.error("Error adding ICE candidate:", error);
+            });
+    }
 }
 
 // Export the database variable
