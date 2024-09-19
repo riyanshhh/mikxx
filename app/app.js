@@ -12,7 +12,7 @@ const remoteVideo = document.getElementById('remoteVideo');
 // Firebase signaling listener
 database.ref('signals').on('child_added', (snapshot) => {
     const signal = snapshot.val();
-    handleSignal(signal);
+    handleSignal(signal); // Process the incoming signal
 });
 
 startCallButton.onclick = startCall;
@@ -79,6 +79,6 @@ function handleSignal(signal) {
 // Add ICE candidate handling
 peerConnection.onicecandidate = (event) => {
     if (event.candidate) {
-        sendSignal({ candidate: event.candidate });
+        sendSignal({ candidate: event.candidate }); // Send ICE candidate to remote peer
     }
 };

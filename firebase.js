@@ -16,13 +16,13 @@ const database = firebase.database();
 // Function to send signaling data
 export function sendSignal(signal) {
     console.log("Sending signal:", signal);
-    database.ref('signals').push(signal);
+    database.ref('signals').push(signal); // Push the signal to the 'signals' node
 }
 
 // Listen for incoming signals
 database.ref('signals').on('child_added', (snapshot) => {
     const signal = snapshot.val();
-    handleSignal(signal);
+    handleSignal(signal); // Call the handleSignal function to process the incoming signal
 });
 
 // Export the database variable
