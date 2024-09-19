@@ -1,8 +1,4 @@
-// Import the Firebase modules that you need in your app
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-
-// Your web app's Firebase configuration
+// Initialize Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyDhz3wB1uNVEpln-nfZ3XMNLu4NMhZ_Xx0",
     authDomain: "mikxx-193ec.firebaseapp.com",
@@ -13,9 +9,16 @@ const firebaseConfig = {
     appId: "1:928424108366:web:3d1755ae4221a74d673e1f"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
 
-// Export the auth object for use in other files
-export { auth };
+// Function to send signaling data
+function sendSignal(signal) {
+    database.ref('signals').push(signal);
+}
+
+// Listen for incoming signals
+database.ref('signals').on('child_added', (snapshot) => {
+    const signal = snapshot.val();
+    handleSignal(signal);
+});

@@ -1,29 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Call App</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
 <body>
-    <div id="login-container">
-        <h2>Login</h2>
-        <input type="email" id="login-email" placeholder="Email">
-        <input type="password" id="login-password" placeholder="Password">
-        <button id="login-button">Login</button>
-        <button id="google-login">Login with Google</button>
-        <button id="facebook-login">Login with Facebook</button>
-    </div>
-    <div id="signup-container">
-        <h2>Signup</h2>
-        <input type="email" id="signup-email" placeholder="Email">
-        <input type="password" id="signup-password" placeholder="Password">
-        <button id="signup-button">Signup</button>
-    </div>
-    <div id="video-call-container" style="display:none;">
-        <!-- Video call UI will go here -->
-    </div>
-    <script src="app.js"></script>
+    <video id="localVideo" autoplay muted></video>
+    <video id="remoteVideo" autoplay></video>
+    <button id="startCall">Start Call</button>
+    <button id="endCall">End Call</button>
+    ...
 </body>
-</html>

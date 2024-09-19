@@ -1,50 +1,61 @@
-import { auth } from './firebase.js'; // Ensure this path is correct
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } from "firebase/auth";
+let localStream;
+let remoteStream;
+let peerConnection;
 
-// Google and Facebook Auth Providers
-const googleProvider = new GoogleAuthProvider();
-const facebookProvider = new FacebookAuthProvider();
+const startCallButton = document.getElementById('startCall');
+const endCallButton = document.getElementById('endCall');
+const localVideo = document.getElementById('localVideo');
+const remoteVideo = document.getElementById('remoteVideo');
 
-// Login Function
-document.getElementById('login-button').addEventListener('click', () => {
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    signInWithEmailAndPassword(auth, email, password)
-        .then(() => {
-            // Show video call UI
-            document.getElementById('video-call-container').style.display = 'block';
-        })
-        .catch(error => console.error(error));
-});
+startCallButton.onclick = startCall;
+endCallButton.onclick = endCall;
 
-// Google Login
-document.getElementById('google-login').addEventListener('click', () => {
-    signInWithPopup(auth, googleProvider)
-        .then(() => {
-            // Show video call UI
-            document.getElementById('video-call-container').style.display = 'block';
-        })
-        .catch(error => console.error(error));
-});
+async function startCall() {
+    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    localVideo.srcObject = localStream;
 
-// Facebook Login
-document.getElementById('facebook-login').addEventListener('click', () => {
-    signInWithPopup(auth, facebookProvider)
-        .then(() => {
-            // Show video call UI
-            document.getElementById('video-call-container').style.display = 'block';
-        })
-        .catch(error => console.error(error));
-});
+    // Initialize peer connection
+    peerConnection = new RTCPeerConnection();
+    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
-// Signup Function
-document.getElementById('signup-button').addEventListener('click', () => {
-    const email = document.getElementById('signup-email').value;
-    const password = document.getElementById('signup-password').value;
-    createUserWithEmailAndPassword(auth, email, password)
-        .then(() => {
-            // Show video call UI
-            document.getElementById('video-call-container').style.display = 'block';
-        })
-        .catch(error => console.error(error));
-});
+    peerConnection.ontrack = (event) => {
+        remoteVideo.srcObject = event.streams[0];
+    };
+
+    // Create offer
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+    
+    // Send offer to remote peer
+    sendSignal({ type: 'offer', offer: offer });
+}
+
+function endCall() {
+    peerConnection.close();
+    localStream.getTracks().forEach(track => track.stop());
+    localVideo.srcObject = null;
+    remoteVideo.srcObject = null;
+}
+
+function handleSignal(signal) {
+    if (signal.type === 'offer') {
+        peerConnection.setRemoteDescription(new RTCSessionDescription(signal.offer));
+        peerConnection.createAnswer().then(answer => {
+            peerConnection.setLocalDescription(answer);
+            sendSignal({ type: 'answer', answer: answer });
+        });
+    } else if (signal.type === 'answer') {
+        peerConnection.setRemoteDescription(new RTCSessionDescription(signal.answer));
+    } else if (signal.candidate) {
+        peerConnection.addIceCandidate(new RTCIceCandidate(signal.candidate));
+    }
+}
+
+// Add ICE candidate handling
+peerConnection.onicecandidate = (event) => {
+    if (event.candidate) {
+        sendSignal({ candidate: event.candidate });
+    }
+};
+
+// Implement signaling logic (e.g., using Firebase)
