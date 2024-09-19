@@ -1,7 +1,8 @@
+// Import the Firebase modules that you need in your app
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, FacebookAuthProvider } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 
-// Firebase configuration
+// Your web app's Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyDhz3wB1uNVEpln-nfZ3XMNLu4NMhZ_Xx0",
     authDomain: "mikxx-193ec.firebaseapp.com",
@@ -16,8 +17,5 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Initialize providers
-const googleProvider = new GoogleAuthProvider();
-const facebookProvider = new FacebookAuthProvider();
-
-export { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, googleProvider, facebookProvider, signInWithPopup };
+// Export the auth object for use in other files
+export { auth };
