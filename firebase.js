@@ -25,11 +25,5 @@ database.ref('signals').on('child_added', (snapshot) => {
     handleSignal(signal);
 });
 
-// Function to handle incoming signals
-function handleSignal(signal) {
-    console.log("Received signal:", signal);
-    // Handle the signal as before
-}
-
 // Export the database variable
 export { database }; // Ensure this line is present
