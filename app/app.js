@@ -1,3 +1,5 @@
+import { sendSignal, database } from './firebase.js'; // Import the sendSignal and database
+
 let localStream;
 let remoteStream;
 let peerConnection;
