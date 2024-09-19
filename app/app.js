@@ -8,6 +8,9 @@ const startCallButton = document.getElementById('startCall');
 const endCallButton = document.getElementById('endCall');
 const localVideo = document.getElementById('localVideo');
 const remoteVideo = document.getElementById('remoteVideo');
+const callModal = document.getElementById('callModal');
+const acceptCallButton = document.getElementById('acceptCall');
+const rejectCallButton = document.getElementById('rejectCall');
 
 // Firebase signaling listener
 database.ref('signals').on('child_added', (snapshot) => {
@@ -17,6 +20,8 @@ database.ref('signals').on('child_added', (snapshot) => {
 
 startCallButton.onclick = startCall;
 endCallButton.onclick = endCall;
+acceptCallButton.onclick = acceptCall;
+rejectCallButton.onclick = rejectCall;
 
 async function startCall() {
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
@@ -30,12 +35,8 @@ async function startCall() {
         remoteVideo.srcObject = event.streams[0];
     };
 
-    // Create offer
-    const offer = await peerConnection.createOffer();
-    await peerConnection.setLocalDescription(offer);
-    
-    // Send offer to remote peer
-    sendSignal({ type: 'offer', offer: offer });
+    // Send call invitation
+    sendSignal({ type: 'call' });
 }
 
 function endCall() {
@@ -45,8 +46,20 @@ function endCall() {
     remoteVideo.srcObject = null;
 }
 
+function acceptCall() {
+    callModal.style.display = 'none';
+    startCall();
+}
+
+function rejectCall() {
+    callModal.style.display = 'none';
+}
+
 function handleSignal(signal) {
-    if (signal.type === 'offer') {
+    if (signal.type === 'call') {
+        // Show call invitation modal
+        callModal.style.display = 'flex';
+    } else if (signal.type === 'offer') {
         // Handle offer
         peerConnection.setRemoteDescription(new RTCSessionDescription(signal.offer))
             .then(() => {
