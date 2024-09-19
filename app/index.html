@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login/Signup</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Link to external CSS -->
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="tab">
+                <button class="tablinks active" onclick="openTab(event, 'Login')">Login</button>
+                <button class="tablinks" onclick="openTab(event, 'Signup')">Signup</button>
+            </div>
+            <div id="Login" class="tabcontent active">
+                <h2>Login</h2>
+                <form id="login-form">
+                    <input type="email" placeholder="Email" required />
+                    <input type="password" placeholder="Password" required />
+                    <button type="submit">Login</button>
+                </form>
+                <button id="google-login" class="social-button">Login with Google</button>
+                <button id="facebook-login" class="social-button">Login with Facebook</button>
+            </div>
+            <div id="Signup" class="tabcontent">
+                <h2>Signup</h2>
+                <form id="signup-form">
+                    <input type="email" placeholder="Email" required />
+                    <input type="password" placeholder="Password" required />
+                    <button type="submit">Signup</button>
+                </form>
+            </div>
+        </div>
+        <div id="video-call-container" class="video-call-container" style="display:none;">
+            <h2>Video Call</h2>
+            <div class="video-container">
+                <video id="localVideo" autoplay muted></video>
+                <video id="remoteVideo" autoplay></video>
+            </div>
+            <button id="startCall" class="call-button">Start Call</button>
+        </div>
+    </div>
+    <script src="app.js"></script>
+    <script>
+        function openTab(evt, tabName) {
+            // Hide all tab content
+            const tabcontent = document.getElementsByClassName("tabcontent");
+            for (let i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            // Remove active class from all tab links
+            const tablinks = document.getElementsByClassName("tablinks");
+            for (let i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            // Show the current tab and add an active class to the button that opened the tab
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.classList.add("active");
+        }
+    </script>
+</body>
+</html>

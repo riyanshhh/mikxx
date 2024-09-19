@@ -1,0 +1,139 @@
+/* styles.css */
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f0f2f5; /* Light background for contrast */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    width: 400px;
+    transition: transform 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px); /* Lift effect on hover */
+}
+
+.tab {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.tab button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background-color: #007bff; /* Primary color */
+    color: white;
+    cursor: pointer;
+    border-radius: 8px 8px 0 0; /* Rounded top corners */
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.tab button:hover {
+    background-color: #0056b3; /* Darker shade on hover */
+    transform: scale(1.05); /* Slight scaling effect */
+}
+
+.tab button.active {
+    background-color: #0056b3; /* Active tab color */
+}
+
+.tabcontent {
+    display: none; /* Hide tab content by default */
+}
+
+.tabcontent.active {
+    display: block; /* Show active tab content */
+}
+
+h2 {
+    color: #333; /* Dark text for headings */
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+input {
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    transition: border-color 0.3s;
+}
+
+input:focus {
+    border-color: #007bff; /* Highlight border on focus */
+    outline: none; /* Remove default outline */
+}
+
+button {
+    padding: 12px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 8px;
+    background-color: #007bff; /* Primary button color */
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+button:hover {
+    background-color: #0056b3; /* Darker shade on hover */
+    transform: scale(1.05); /* Slight scaling effect */
+}
+
+.social-button {
+    background-color: #db4437; /* Google Red */
+    margin: 10px 0;
+}
+
+.social-button:hover {
+    background-color: #c1351d; /* Darker Google Red on hover */
+}
+
+.video-call-container {
+    text-align: center;
+}
+
+.video-container {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+}
+
+video {
+    width: 45%;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.call-button {
+    background-color: #28a745; /* Green for call button */
+}
+
+.call-button:hover {
+    background-color: #218838; /* Darker Green on hover */
+}
