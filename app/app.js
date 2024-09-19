@@ -1,4 +1,4 @@
-import { sendSignal, database } from './firebase.js'; // Import the sendSignal and database
+import { sendSignal, database } from './firebase.js'; // Ensure this import is correct
 
 let localStream;
 let remoteStream;
